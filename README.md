@@ -10,13 +10,16 @@ an incoming session leaves nothing on the victim's screen.
 
 ## What is changed against upstream 1.5.1
 
-`patches/client.patch` holds the whole diff; in short:
+`patches/hbb_common.patch` (the relay, app name and stealth defaults) applies
+inside the `libs/hbb_common` submodule, `patches/client.patch` on the main tree.
+In short:
 
 | file | change |
 | --- | --- |
 | `libs/hbb_common/src/config.rs` | `RENDEZVOUS_SERVERS` = our relay, `RS_PUB_KEY` = our key, `APP_NAME` = `DeskLink` |
-| `libs/hbb_common/src/password_security.rs` | defaults `approve-mode=password` and `verification-method=use-permanent-password`, `hide_cm()` allowed for custom builds |
+| `libs/hbb_common/src/password_security.rs` | custom builds always use `approve-mode=password` and the permanent password, and `hide_cm()` is always allowed |
 | `src/tray.rs` | tray icon suppressed for custom builds |
+| `flutter/lib/common.dart` | `desklink://` link handling |
 | `build.py` | portable packer uses `sys.executable`, `os.replace` on the final rename |
 
 Renaming `APP_NAME` also flips `is_custom_client()`, which is what disables the
@@ -41,7 +44,9 @@ stable, `flutter_rust_bridge_codegen` 1.80.1.
 
 ```bat
 git clone --recursive --branch 1.5.1 https://github.com/rustdesk/rustdesk
-cd rustdesk && git apply ..\patches\client.patch
+cd rustdesk
+git apply ..\patches\client.patch
+git -C libs/hbb_common apply ..\..\patches\hbb_common.patch
 :: see patches/ for the environment exports the Windows build needs
 python build.py --flutter --portable --hwcodec
 ```

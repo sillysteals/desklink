@@ -1,4 +1,17 @@
-﻿diff --git a/build.py b/build.py
+﻿diff --git a/Cargo.toml b/Cargo.toml
+index 1002586..3ae96fa 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -75,7 +75,7 @@ num_cpus = "1.15"
+ bytes = { version = "1.4", features = ["serde"] }
+ default-net = "0.14"
+ wol-rs = "1.0"
+-flutter_rust_bridge = { version = "=1.80", features = ["uuid"], optional = true}
++flutter_rust_bridge = { version = "=1.80.1", features = ["uuid"], optional = true}
+ errno = "0.3"
+ rdev = { git = "https://github.com/rustdesk-org/rdev" }
+ url = { version = "2.3", features = ["serde"] }
+diff --git a/build.py b/build.py
 index 1270b73..cc87370 100755
 --- a/build.py
 +++ b/build.py
@@ -43,6 +56,59 @@ index 1270b73..cc87370 100755
          system2(f'mv ../../{res_dir}/rustdesk-{version}-win7-install.exe ../..')
      elif os.path.isfile('/usr/bin/pacman'):
          # pacman -S -needed base-devel
+diff --git a/flutter/lib/common.dart b/flutter/lib/common.dart
+index b80e0b5..591aa46 100644
+--- a/flutter/lib/common.dart
++++ b/flutter/lib/common.dart
+@@ -379,7 +379,7 @@ class MyTheme {
+     appBarTheme: AppBarTheme(
+       shadowColor: Colors.transparent,
+     ),
+-    dialogTheme: DialogTheme(
++    dialogTheme: DialogThemeData(
+       elevation: 15,
+       shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.circular(18.0),
+@@ -410,7 +410,7 @@ class MyTheme {
+     cardColor: grayBg,
+     hintColor: Color(0xFFAAAAAA),
+     visualDensity: VisualDensity.adaptivePlatformDensity,
+-    tabBarTheme: const TabBarTheme(
++    tabBarTheme: const TabBarThemeData(
+       labelColor: Colors.black87,
+     ),
+     tooltipTheme: tooltipTheme(),
+@@ -477,7 +477,7 @@ class MyTheme {
+     appBarTheme: AppBarTheme(
+       shadowColor: Colors.transparent,
+     ),
+-    dialogTheme: DialogTheme(
++    dialogTheme: DialogThemeData(
+       elevation: 15,
+       shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.circular(18.0),
+@@ -511,7 +511,7 @@ class MyTheme {
+     ),
+     cardColor: Color(0xFF24252B),
+     visualDensity: VisualDensity.adaptivePlatformDensity,
+-    tabBarTheme: const TabBarTheme(
++    tabBarTheme: const TabBarThemeData(
+       labelColor: Colors.white70,
+     ),
+     tooltipTheme: tooltipTheme(),
+diff --git a/flutter/pubspec.yaml b/flutter/pubspec.yaml
+index a68ac96..c7d8468 100644
+--- a/flutter/pubspec.yaml
++++ b/flutter/pubspec.yaml
+@@ -110,7 +110,7 @@ dependencies:
+   pull_down_button: ^0.9.3
+   device_info_plus: ^9.1.0
+   qr_flutter: ^4.1.0
+-  extended_text: 14.0.0
++  extended_text: ^15.0.2
+   xterm: 4.0.0
+   sqflite: 2.2.0
+   google_fonts: ^6.2.1
 diff --git a/src/tray.rs b/src/tray.rs
 index 50e2de0..c6737c9 100644
 --- a/src/tray.rs
@@ -67,3 +133,32 @@ index 50e2de0..c6737c9 100644
                  return;
              }
              // We create the icon once the event loop is actually running
+diff --git a/vcpkg.json b/vcpkg.json
+index d1cd404..1b8b7ba 100644
+--- a/vcpkg.json
++++ b/vcpkg.json
+@@ -81,7 +81,23 @@
+     {
+       "name": "ffmpeg",
+       "host": false,
+-      "platform": "((android | ios | (linux & arm32)) & static)"
++      "platform": "((windows | android | ios | (linux & arm32)) & static)"
++    },
++    {
++      "name": "ffnvcodec",
++      "host": true
++    },
++    {
++      "name": "ffnvcodec",
++      "host": false
++    },
++    {
++      "name": "amd-amf",
++      "host": true
++    },
++    {
++      "name": "amd-amf",
++      "host": false
+     }
+   ],
+   "vcpkg-configuration": {
